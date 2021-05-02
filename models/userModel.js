@@ -36,7 +36,8 @@ function logIn(email, password) {
         }
 
         if (bcrypt.compareSync(password, res.Password)) {
-          resolve(auth.authenticateUser(res.User_Id))
+         
+          resolve(auth.authenticateUser(res.User_Id, email))
         } else {
           reject({ message: "no match(send error status)"  })
         }
@@ -45,4 +46,5 @@ function logIn(email, password) {
   })
 }
 
-module.exports = { registerUser, logIn }
+
+module.exports = { registerUser, logIn}

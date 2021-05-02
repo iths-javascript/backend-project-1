@@ -1,10 +1,10 @@
-require('dotenv').config()
+require("dotenv").config()
 
 const users = require("../models/userModel.js")
-
+const auth = require("../middleware/auth.js")
 
 async function registerUser(req, res, next) {
-    const { Email, Password } = req.body
+  const { Email, Password } = req.body
   try {
     const results = await users.registerUser(Email, Password)
     res.json(results)
@@ -13,32 +13,27 @@ async function registerUser(req, res, next) {
   }
 }
 
+async function logIn(req, res) {
+  const { Email, Password } = req.body
 
-
-
-async function logIn(req, res) {  
-const {Email, Password} = req.body
-
-try {
+  try {
     const token = await users.logIn(Email, Password)
-    //ge token om det lyckas
-    res.json({token: token})
+    res.json({ token: token })
   } catch (err) {
     res.json(err)
   }
-
 }
 
+function currentUser(req, res) {
+  const token = req.headers.authorization.replace("Bearer ", "")
+  const id = auth.currentUser(token)
+ 
 
+  if (id) {
+    res.json({ user: id })
+  } else {
+    res.json(err)
+  }
+}
 
-
-
-
-
-// const decrypted = jwt.verify(token, SECRET_KEY)
-
-
-
-
-
-module.exports = { registerUser, logIn}
+module.exports = { registerUser, logIn, currentUser }
