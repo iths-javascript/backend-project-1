@@ -1,35 +1,91 @@
-const recipes = require("../models/recipesModel.js")
-const jwt = require("jsonwebtoken")
+require("dotenv").config()
 
-async function getIngredients (req,res) {
+const Recipes = require("../models/recipesModel.js")
+
+
+async function getAllRecipes(req, res) {
+
+
+  let { page, filter } = req.query
+
+  if (page == undefined || page == 0) {
+    page = false
+  
+  }
+  if (filter == undefined) {
+    filter = false
+  }
+
+
+
+
+  try {
+    const results = await Recipes.getAllRecipes(page,filter)
+    res.json(results)
+  } catch (err) {
+    res.json(err)
+  }
+}
+
+async function getRecipe(req, res) {
+  const { id } = req.params
+
+  try {
+    const recipe = await Recipes.getRecipe(id)
+    res.json(recipe)
+  } catch (err) {
+    res.json(err)
+  }
+}
+
+async function addRecipe(req, res) {
+  const { Name } = req.body
+  let userId = req.body.user.id
+  console.log(req.body)
+
+  try {
+    await Recipes.addRecipe(Name, userId)
+    res.json({ message: "new recipe added" })
+  } catch (err) {
+    res.json(err)
+  }
+}
+
+async function editRecipe(req, res) {
+
+
+  const { Name } = req.body
+
+  try {
+    await Recipes.editRecipe(Name, req.params.id)
+    res.json({ message: "recipe updated" })
+
     
-    try {
-        const results = await recipes.getIngredients()
-        res.json(results)
-      } catch (err) {
-        res.json(err)
-      }
+  } catch (err) {
+    res.json(err)
+  }
+
 }
 
-function getAllRecipes() {}
+async function deleteRecipe(req, res) {
+  const { id } = req.params
 
-function getRecipe() {}
 
-function addRecipe() {
-   //check if user token is true
-}
 
-function editRecipe() {
-   //check if user token is true
-}
+  try {
+    const deleted = await Recipes.deleteRecipe(id)
 
-function deleteRecipe() {
-
-  //check if user token is true
+    if (deleted == 1) {
+      res.json({ message: "recipe deleted" })
+    } else {
+      res.json({ message: "no recipe found" })
+    }
+  } catch (err) {
+    res.json(err)
+  }
 }
 
 module.exports = {
-  getIngredients,
   getAllRecipes,
   getRecipe,
   addRecipe,

@@ -1,17 +1,36 @@
 const SECRET_KEY = process.env.SECRET_KEY
 const jwt = require("jsonwebtoken")
+const Recipes = require("../models/recipesModel")
 
-function authenticateUser(id) {
+async function verifyToken(req, res, next) {
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "")
+    const user = jwt.verify(token, SECRET_KEY)
 
-  const token = jwt.sign(id, SECRET_KEY)
-  return token
+    req.body.user = user
+  } catch (err) {
+    {
+      err
+    }
+  }
+  next()
 }
 
-function currentUser(token){
-  const user = jwt.verify(token, SECRET_KEY)
- 
+async function checkId(req, res, next) {
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "")
+    const user = jwt.verify(token, SECRET_KEY)
 
-  return user
+    const owner = await Recipes.matchOwnerId(user.id, req.params.id)
 
+    if (owner) {
+      next()
+    } else {
+      res.json({ message: "unauthorized" })
+    }
+  } catch (err) {
+    res.json(err)
+  }
 }
-module.exports = { authenticateUser, currentUser }
+
+module.exports = { verifyToken, checkId }

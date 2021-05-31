@@ -1,8 +1,22 @@
-const sqlite = require("sqlite3")
-const db = new sqlite.Database("./database/database.db")
+const {Sequelize} = require('sequelize')
 
-db.run(`PRAGMA foreign_keys = ON`, (err) => {
-  err && console.log(err)
+
+const db = new Sequelize ({
+  dialect: 'sqlite',
+  storage: 'database/database.db'
 })
 
+
 module.exports = db
+
+
+
+
+// const sqlite = require("sqlite3")
+// const db = new sqlite.Database("./database/database.db")
+
+// db.run(`PRAGMA foreign_keys = ON`, (err) => {
+//   err && console.log(err)
+// })
+
+// module.exports = db

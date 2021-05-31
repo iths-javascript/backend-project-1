@@ -1,50 +1,48 @@
-
-const auth = require("../middleware/auth.js")
 const db = require("../database/connection.js")
+const { DataTypes } = require("sequelize")
 const bcrypt = require("bcryptjs")
 const salt = 10
+const Recipes = require('./userModel')
 
-function registerUser(email, password) {
+const User = db.define("User", {
+  Email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: {
+      args: true,
+      msg: "Username already exists",
+    },
+  },
+  Password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+})
+
+User.registerUser = async (email, password) => {
   const hashed = bcrypt.hashSync(password, salt)
 
-  return new Promise((resolve, reject) => {
-    db.run(
-      `INSERT INTO Users ("Email", "Password") VALUES (?, ?)`,
-      [email, hashed],
-      function (err) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve({ message: `new user added with id ${this.lastID}` })
-        }
-      }
-    )
-  })
+  try {
+    const newUser = User.create({ Email: email, Password: hashed })
+    return newUser
+  } catch (error) {}
 }
 
-function logIn(email, password) {
+User.logIn = async (email) => {
+  try {
+    const user = User.findOne({
+      where: {
+        Email: email,
+      },
+    })
 
-  return new Promise((resolve, reject) => {
-    db.get(
-      `SELECT Password, User_Id FROM Users WHERE Email LIKE ?`,
-      [email],
-      (err, res) => {
-        
-
-        if (err) {
-          reject(err)
-        }
-
-        if (bcrypt.compareSync(password, res.Password)) {
-         
-          resolve(auth.authenticateUser(res.User_Id, email))
-        } else {
-          reject({ message: "no match(send error status)"  })
-        }
-      }
-    )
-  })
+    return user
+  } catch (err) {}
 }
 
 
-module.exports = { registerUser, logIn}
+
+
+
+
+module.exports = User
